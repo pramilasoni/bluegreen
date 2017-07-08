@@ -20,7 +20,7 @@ $directorypath = Split-Path $invocation.MyCommand.Path
 $parentDirectoryPath = (Get-Item $directorypath).Parent.FullName
 
 # Constants:
-$webAppPublishingProfileFileName = $directorypath + "\bluegreenui.publishsettings"
+$webAppPublishingProfileFileName = $directorypath + "\pso-webappVS.publishsettings"
 echo "web publishing profile will be stored to: $webAppPublishingProfileFileName"
 
 # Determine which directory to deploy:
@@ -34,11 +34,11 @@ Nuget.exe restore "$parentDirectoryPath\src\BlueGreenUI"
 
 
 # Select Subscription:
-Get-AzureRmSubscription -SubscriptionName "$SubscriptionName" | Select-AzureRmSubscription
+Get-AzureRmSubscription -SubscriptionId  "$SubscriptionName" | Select-AzureRmSubscription
 echo "Selected Azure Subscription"
 
 # Fetch publishing profile for web app:
-Get-AzureRmWebAppPublishingProfile -Name $WebAppName -OutputFile $webAppPublishingProfileFileName -ResourceGroupName $RGName
+Get-AzureRmWebAppPublishingProfile -Name pso-webappVS -OutputFile C:\Projects\Azure\bluegreen\deploy\pso-webappVS.PublishSettings -ResourceGroupName pso-azureappserviceplanRG 
 echo "Fetched Azure Web App Publishing Profile: bluegreenui.publishsettings"
 
 # Parse values from .publishsettings file:
@@ -56,7 +56,7 @@ $computername = $publishsettingsxml.publishData.publishProfile[0].publishUrl
 echo "computer name: $computername"
 
 # Deploy the web app ui
-$msdeploy = "C:\Program Files (x86)\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+$msdeploy = "C:\MicrosoftWebDeployV3\msdeploy.exe"
 
 $msdeploycommand = $("`"{0}`" -verb:sync -source:contentPath=`"{1}`" -dest:contentPath=`"{2}`",computerName=https://{3}/msdeploy.axd?site={4},userName={5},password={6},authType=Basic"   -f $msdeploy, $sourceDirToBuild, $websiteName, $computername, $websiteName, $username, $password)
 
